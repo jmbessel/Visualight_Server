@@ -2,8 +2,8 @@
 module.exports = {
 	
 	host		: 'smtp.gmail.com',
-	user 		: 'your-email-address@gmail.com',
-	password 	: 'your-email-password',
-	sender		: 'Your Name <your-email-address@gmail.com>'
+	user 		: 'info@visualight.org',
+	password 	: 'yodyryedgzudvnuh',
+	sender		: 'Visualight <info@visualight.org>'
 	
 }
