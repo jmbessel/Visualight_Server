@@ -4,7 +4,7 @@
 
 ***
 
-####Visualight is built on top of Node-Login which uses the following libraries :
+####Visualight is built on top of [Node-Login](https://github.com/braitsch/node-login) which uses the following libraries :
 
 * [Node.js](http://nodejs.org/) - Application Server
 * [Express.js](http://expressjs.com/) - Node.js Web Framework
