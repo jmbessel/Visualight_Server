@@ -80,7 +80,7 @@ $(document).ready(function(){
 	$("#type").slider({
 	    value: 0,
 	    min: 0,
-	    max: 2,
+	    max: 1,
 	    slide: function(event, ui) {
 	        typetip.text(ui.value);
 	    },
