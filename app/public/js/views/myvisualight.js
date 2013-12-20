@@ -77,7 +77,8 @@ $(document).ready(function(){
 	    //freqtip.hide()
 	})
 	
-	$("#type").slider({
+	/*
+$("#type").slider({
 	    value: 0,
 	    min: 0,
 	    max: 1,
@@ -90,6 +91,7 @@ $(document).ready(function(){
 	}, function() {
 	    //typetip.hide()
 	})
+*/
 	
 	setupVisualightButtons();
 	connectSocket();
