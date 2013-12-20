@@ -352,7 +352,7 @@ $(document).ready(function(){
 	      if(!state.hasOwnProperty('on')){
 		      alert('Change Color first!');
 	      }else{
-		      state.alert = { duration: $( "#duration" ).slider( "value" ), frequency: $( "#frequency" ).slider( "value" ), type: $("#type .active").data("value");};
+		      state.alert = { duration: $( "#duration" ).slider( "value" ), frequency: $( "#frequency" ).slider( "value" ), type: $("#type .active").data("value")};
 		      sendAPICall(state);
 		  }
       })
