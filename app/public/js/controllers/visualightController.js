@@ -225,6 +225,7 @@ $('div.btn-group .btn').click(function(){
 			error: function(jqXHR){
 				console.log(jqXHR.responseText+' :: '+jqXHR.statusText);
 				if(jqXHR.responseText == "bulb-already-registered"){
+				$('.modal-bulb-network').modal('hide');
 					mainCallback();
 	 				location.reload();
 				}
