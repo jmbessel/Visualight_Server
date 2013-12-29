@@ -224,6 +224,10 @@ $('div.btn-group .btn').click(function(){
 			},
 			error: function(jqXHR){
 				console.log(jqXHR.responseText+' :: '+jqXHR.statusText);
+				if(jqXHR.responseText == "bulb-already-registered"){
+					mainCallback();
+	 				location.reload();
+				}
 			}
 		});
 	}
