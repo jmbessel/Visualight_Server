@@ -80,6 +80,17 @@ exports.sessionAuth = function(session_id, session, callback)
 	})
 }
 
+exports.findByApiKey = function(apikey, callback) {
+	accounts.findOne({ apikey: apikey }, function (e, o) {
+		//console.log("API KEY: "+apikey);
+		if (o == null){
+			callback("key-not-found",null);
+		}	else{
+			callback(true);
+		}
+  });
+}
+
 /* socket validation methods */
 
 exports.validateSession = function(session, callback)
@@ -177,10 +188,13 @@ exports.updateBulbData = function(key,post,callback)
 	
 	bulbs.update({_id:getBulbId(key)},obj, true, function(e,o){
 		var result = new Object();
-		
-		if(e){ result.status = 'error';
-			   result.details = e;
-		}else{ result.status = 'success';
+		if(e == null && o == 0){ 
+			result.status = 'visualight not found';
+		}else if(e){
+			result.status = "error";
+			result.details = e;
+		}else{
+			result.status = 'success';
 		}
 		callback(result)
 	})

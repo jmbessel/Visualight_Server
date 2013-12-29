@@ -3,6 +3,7 @@ var AM = require('./modules/account-manager');
 var EM = require('./modules/email-dispatcher');
 var WS = require('./modules/handle-sockets');
 var API = require('./modules/api');
+var APIAUTH = require('./modules/api-auth');
 var AUTH = require('./modules/auth');
 
 var colors = require('colors');
@@ -26,7 +27,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			WS.createSockets(app, io, AM); // then setup the sockets
 		}
 	});
-	
+
 	app.get('/test',AUTH.sessionCheck,function(req,res){
 		res.send('you\'ve made it');
 	})
@@ -326,6 +327,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 		AM.updateBulbData(key,post,function(result){
 			//res.send(result);
 			res.writeHead(200, {'content-type':'text/json'})
+			//res.write(result);
 			res.end(JSON.stringify(result))
 		})
 	
@@ -391,10 +393,10 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  *	@method post /trigger/:key
  * 	@param {JSON OBJECT} bulbObj 
  */ 
- 
+ //AUTH.authCheck APIAUTH.validateApiKey
 app.post('/trigger/:key',AUTH.authCheck,function(req,res){
 	
-	console.log('Got Trigger');
+	console.log('Got API Trigger');
 	console.log(req.body)
 	
 
@@ -402,17 +404,16 @@ app.post('/trigger/:key',AUTH.authCheck,function(req,res){
 		var post = req.body;
 		
 		API.parseMessage(JSON.stringify(post), WS.returnBulbs,function(o,e){ 
-			
+			//console.log("parsing message");
 			if(o != null){ // the json was valid and we have a bulb object that is valid
-              WS.sendTrigger(o);  // send this data to the visualight
-
-            }else{
-              console.log(e.error); // we got an error from the api call -- NEED TO SEND THIS BACK TO THE CLIENT??
-
-            }
-			
+				//console.log("sending trigger");
+      	WS.sendTrigger(o);  // send this data to the visualight
+      	res.send(200);
+      }else{
+      	console.log(e.error); // we got an error from the api call -- NEED TO SEND THIS BACK TO THE CLIENT??
+      	res.send(400);
+      }
 		})
-
 })
  
 /** 

@@ -49,6 +49,7 @@ exports.parseMessage = function(message,Bulbs,callback){
 					})//end for each
 					})//end am.getGroupBulbs
 				}else{
+					//console.log("bulb here");
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED Bulb.id:"+parsed.id);
 					}else{
@@ -71,7 +72,7 @@ exports.parseMessage = function(message,Bulbs,callback){
         
     }catch(e){
     	//this catch kicks if any of the operations in try fail.
-    	console.log("PARSE ERROR: " + e);
+    	//console.log("PARSE ERROR: " + e);
         callback(null,"INVALID JSON: " + message);
     }
 }

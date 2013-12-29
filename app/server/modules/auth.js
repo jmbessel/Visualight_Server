@@ -13,9 +13,16 @@ exports.sessionCheck = function(req, res, next){
 //returns 400
 exports.authCheck = function(req, res, next){ // This should be able to handle both a session/cookie auth or an api key auth
 	console.log('Checking Auth');
-	AM.sessionAuth(req.cookies['connect.sid'],req.session, function(valid){
-		if(valid === true) next();
-		else res.send('not-authorized',400);
-	})
-
+	if(req.header('X-Apikey')!=null){
+		console.log('Checking API KEY');
+		AM.findByApiKey(req.header('X-Apikey'), function(valid){
+			if(valid === true) next();
+			else res.send('not-authorized',403);
+			});
+	}else{
+		AM.sessionAuth(req.cookies['connect.sid'],req.session, function(valid){
+			if(valid === true) next();
+			else res.send('not-authorized',403);
+		});
+	}
 }
