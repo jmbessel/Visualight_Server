@@ -111,12 +111,12 @@ $('div.btn-group .btn').click(function(){
 	 			$('.modal-bulb-network .modal-body #searching').css('display','block');
 	 			$('.modal-bulb-network .modal-body #set-network-form').css('display','none');
 	 			$('.modal-bulb-network .submit').html('Im already connected! Make it happen!');
-	 			$('.modal-bulb-network .submit').click(function(){ addBulb(newBulb)};
+	 			$('.modal-bulb-network .submit').click(function(){ addBulb(newBulb)});
 	 			$('.modal-bulb-network .cancel').click(function(){
 		 			//that.postNetwork();
 		 			console.log("Aborting")
 		 			clearTimeout(timer);
-	}			);
+		 			});
 	 			getNetworkConnection();
 	 			//$('.modal-bulb-setup .modal-body #searching').html("Success!");
 	 			//setTimeout(that.networkInput, 1000);
