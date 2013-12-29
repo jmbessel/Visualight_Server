@@ -110,6 +110,8 @@ $('div.btn-group .btn').click(function(){
 	 			$('.modal-bulb-network .modal-body h4').html("Success! Now switch your WiFi back to " + $('.modal-bulb-network #network').val());
 	 			$('.modal-bulb-network .modal-body #searching').css('display','block');
 	 			$('.modal-bulb-network .modal-body #set-network-form').css('display','none');
+	 			$('.modal-bulb-network .submit').html("I'm already connected! Make it happen!");
+	 			$('.modal-bulb-network .submit').click(function(){ addBulb(newBulb)};
 	 			$('.modal-bulb-network .cancel').click(function(){
 		 			//that.postNetwork();
 		 			console.log("Aborting")
