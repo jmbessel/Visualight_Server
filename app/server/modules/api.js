@@ -11,7 +11,7 @@ exports.setup = function(AM){
 	bulbobject: json containing bulb status and details
 	errormessage: verbose error string
 */
-exports.parseMessage = function(message,Bulbs,callback){
+exports.parseMessage = function(message,Bulbs,user,callback){
 
 	
 	//DEAL WITH API KEY
@@ -28,6 +28,7 @@ exports.parseMessage = function(message,Bulbs,callback){
 					
 					g.bulbs.forEach(function(bulb){
 					
+						//TODO: Check and see if this bulb is registered to this user
 						if(Bulbs.hasOwnProperty(bulb)==false){ 
 							callback(null,"BULB LOOKUP FAILED Bulb.id:"+bulb+" Group.id:"+parsed.id);
 						}else{
@@ -50,6 +51,8 @@ exports.parseMessage = function(message,Bulbs,callback){
 					})//end am.getGroupBulbs
 				}else{
 					//console.log("bulb here");
+					
+					//TODO: Check and see if this bulb is registered to this user
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED Bulb.id:"+parsed.id);
 					}else{

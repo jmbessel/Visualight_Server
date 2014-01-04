@@ -115,7 +115,7 @@ exports.createSockets = function(app, io, AM){
                                                         if( Bulbs.hasOwnProperty(cleanbulbID) == false ){ //check if Bulbs[] exists
                                                                   console.log('Bulbs['.help+cleanbulbID.data+'] not defined'.help+' CREATING Bulbs['.help+cleanbulbID.data+']'.help);
                                                                   
-                                                                  Bulbs[cleanbulbID] = { _id: cleanbulbID, mac: mac, netsocket: socket };
+                                                                  Bulbs[cleanbulbID] = { _id: cleanbulbID, mac: mac, netsocket: socket, user:o.user };
                                                                   if(o.hasOwnProperty('color')){
                                                                   	//check if bulb group is different than last stored if so update color
                                                                   	//check bulb setting options

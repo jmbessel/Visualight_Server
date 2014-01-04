@@ -53,7 +53,7 @@ exports.sessionAuth = function(session_id, session, callback)
 		//console.log(o);
 		if(!o){
 			console.log("NO SESSION FOUND");
-			callback(false);
+			callback(null);
 		}else{
 			
 			try{
@@ -65,15 +65,15 @@ exports.sessionAuth = function(session_id, session, callback)
 			
 			if(!dbSess.hasOwnProperty('user')){
 				console.log("NO USER FOUND");
-				callback(false)
+				callback(null)
 			}else{
 				if(dbSess.user == session.user){ 
-					callback(true);
+					callback(session.user);
 				}else{
 				 console.log("USERS DONT MATCH");
 				 console.log('DB:'+dbSess);
 				 console.log('session: '+session.user);
-				 callback(false)
+				 callback(null)
 				}
 			}
 		}
@@ -87,6 +87,17 @@ exports.findByApiKey = function(apikey, callback) {
 			callback("key-not-found",null);
 		}	else{
 			callback(true);
+		}
+  });
+}
+
+exports.userByApiKey = function(apikey, callback) {
+	accounts.findOne({ apikey: apikey }, function (e, o) {
+		//console.log("API KEY: "+apikey);
+		if (o == null){
+			callback(null);
+		}	else{
+			callback(o.user);
 		}
   });
 }
@@ -169,10 +180,11 @@ exports.deleteGroup = function(key,callback)
 
 exports.deleteBulb = function(key,callback)
 {
-	bulbs.remove({_id: getBulbId(key)},function(e){
+	bulbs.remove({_id: getBulbId(key)},function(e,o){
 		var result = new Object();
-		
-		if(e){ result.status = 'error';
+		if(e == null && o == 0){ 
+			result.status = 'visualight not found'
+		}else if(e){ result.status = 'error';
 			   result.details = e;
 		}else{ result.status = 'deleted';
 			   result.details = {key: key};
