@@ -211,8 +211,8 @@ $("#type").slider({
 	});
 	
 	function sendAPICall(state){
-			var webkeyCookie = getCookie('webkey');
-			state.apikey = webkeyCookie;
+			var apikeyCookie = getCookie('apikey');
+			state.apikey = apikeyCookie;
       state.id = currBulbId;
       state.type = currBulbType;
       //convert it to json:

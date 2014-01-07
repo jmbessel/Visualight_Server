@@ -68,9 +68,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
-			    req.session.webkey = o.webkey;
+			    req.session.apikey = o.apikey;
 			    res.cookie('sessionID',req.sessionID);
-			    res.cookie('webkey',req.session.webkey);
+			    res.cookie('apikey',req.session.apikey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });
@@ -88,9 +88,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
-			    req.session.webkey = o.webkey;
+			    req.session.apikey = o.apikey;
 			    res.cookie('sessionID',req.sessionID);
-			    res.cookie('webkey',req.session.webkey);
+			    res.cookie('apikey',req.session.apikey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });

@@ -115,7 +115,7 @@ exports.generateApiKey = function(id,callback){
 }
 */
 
-exports.findByApiKey = function(apikey, callback) {
+exports.validateApiKey = function(apikey, callback) {
 	accounts.findOne({ apikey: apikey }, function (e, o) {
 		//console.log("API KEY: "+apikey);
 		if (o == null){
@@ -302,8 +302,8 @@ exports.manualLogin = function(user, pass, callback)
 		}	else{
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
-					if(o.webkey == null){
-						generateWebKey(o._id,function(valid){
+					if(o.apikey == null){
+						generateApiKey(o._id,function(valid){
 							if(valid){
 								callback(null, o);
 							}else{

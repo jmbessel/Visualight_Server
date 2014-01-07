@@ -1,6 +1,7 @@
 
 var AM = require('./account-manager');
 var IO = require('./handle-sockets');
+var sanitize = require('validator').sanitize;
 
 exports.setup = function(AM){
 	
@@ -19,12 +20,12 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 	try{
         var parsed = JSON.parse(message);
         //var userId
-        console.log("JSON Key: "+parsed.apikey+ " Passed Key: "+userId);
+        //console.log("JSON Key: "+parsed.apikey+ " Passed Key: "+userId);
         if(parsed.apikey !=null || userId != null){
         	if(userId == null){
 	        	AM.userByApiKey(parsed.apikey,function(o){
 							if(o!=null){
-								userId = o;
+								userId = sanitize(o._id).trim();
 								console.log("UserID: "+userId);
 							}else{
 								callback(null,"API Key Lookup Failed");
@@ -75,10 +76,10 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
 					}else{
-						//console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
+						console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
 						if(Bulbs[parsed.id].userid != userId){
 							callback(null,"User not authorized for bulb: "+parsed.id);
-							//throw 
+							return;
 						}
 						switch(parsed.method){
 							case 'put':
