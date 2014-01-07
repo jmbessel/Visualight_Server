@@ -68,7 +68,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
+			    req.session.webkey = o.webkey;
 			    res.cookie('sessionID',req.sessionID);
+			    res.cookie('webkey',req.session.webkey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });
@@ -86,7 +88,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
+			    req.session.webkey = o.webkey;
 			    res.cookie('sessionID',req.sessionID);
+			    res.cookie('webkey',req.session.webkey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });
@@ -223,7 +227,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 	app.get('/get-bulbs',AUTH.authCheck, function(req,res){
 		//console.log("get-bulbs: " + api);
 
-		    AM.getBulbsByUser(req.user, function(o){
+		    AM.getBulbsByUser(req.user.user, function(o){
 			    if(o){
 				    res.send(o,200);
 			    }else{
@@ -234,7 +238,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 		
 	});
 	app.get('/get-bulbs/:key',AUTH.authCheck, function(req,res){
-   	AM.getBulbsByUser(req.user, function(o){
+   	AM.getBulbsByUser(req.user.user, function(o){
 	    if(o){
 		    res.send(o,200);
 	    }else{
@@ -254,7 +258,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 */	
 	app.get('/get-groups', AUTH.authCheck, function(req,res){
 
-		    AM.getGroupsByUser(req.user, function(o){
+		    AM.getGroupsByUser(req.user.user, function(o){
 			    //console.log('AM.getGroups');console.log(o);
 			    if(o){
 				    res.send(o,200);
@@ -267,7 +271,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 	});
 	
 	app.get('/get-groups/:key', AUTH.authCheck, function(req,res){
-    AM.getGroupsByUser(req.user, function(o){
+    AM.getGroupsByUser(req.user.user, function(o){
 	    //console.log('AM.getGroups');console.log(o);
 	    if(o){
 		    res.send(o,200);
@@ -290,7 +294,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 ***/	
 	app.post('/add-bulb', AUTH.authCheck, function(req,res){
 
-		    AM.addNewBulb(req.user,req.param('bulb'), function(e){ // this should be setup to use something other than the cookies. pass user in from check auth?
+		    AM.addNewBulb(req.user.user,req.param('bulb'), function(e){ // this should be setup to use something other than the cookies. pass user in from check auth?
 		    	console.log("add bulb request".help);
 			    if(e){
 				    res.send(e,400);
@@ -386,7 +390,7 @@ app.post('/trigger',AUTH.authCheck,function(req,res,api){
 	console.log(req.body);
 		var post = req.body;
 		
-		API.parseMessage(JSON.stringify(post), WS.returnBulbs, req.user, function(o,e){ 
+		API.parseMessage(JSON.stringify(post), WS.returnBulbs, req.user._id, function(o,e){ 
 			//console.log("parsing message");
 			if(o != null){ // the json was valid and we have a bulb object that is valid
 				//console.log("sending trigger");
@@ -411,7 +415,7 @@ app.post('/trigger',AUTH.authCheck,function(req,res,api){
 
   app.post('/bind-group', AUTH.authCheck,function(req,res){
 	  		
-  			AM.addNewGroup(req.session.user,req.body,function(e){
+  			AM.addNewGroup(req.user.user,req.body,function(e){
   				console.log('add group request'.help);
   				if(e){
   					res.send(e,400);

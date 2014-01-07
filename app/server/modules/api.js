@@ -11,28 +11,45 @@ exports.setup = function(AM){
 	bulbobject: json containing bulb status and details
 	errormessage: verbose error string
 */
-exports.parseMessage = function(message,Bulbs,user,callback){
+exports.parseMessage = function(message,Bulbs,userId,callback){
 
 	
 	//DEAL WITH API KEY
 	//build response json?
 	try{
         var parsed = JSON.parse(message);
+        //var userId
+        if(parsed.apikey !=null || userId != null){
+        	if(userId == null){
+	        	AM.userByApiKey(parsed.apikey,function(o){
+							if(o!=null){
+								userId = o;
+							}else{
+								callback(null,"API Key Lookup Failed");
+							}
+						});
+        	}
+				}else{
+					callback(null, "API Key Not Passed");
+				}
         //console.log("INCOMING MESSAGE: " + message);
         if(parsed.id != null){
 				//console.log("PARSED: "+parsed.type);
+
 				if(parsed.type === 'group'){
 					
 					AM.getGroupBulbs(parsed.id,function(g){
 					if(g==null) callback(null,"GROUPS ERROR");
-					
+					//TODO: Check and see if this group is registered to this user
 					g.bulbs.forEach(function(bulb){
 					
-						//TODO: Check and see if this bulb is registered to this user
+						
 						if(Bulbs.hasOwnProperty(bulb)==false){ 
 							callback(null,"BULB LOOKUP FAILED Bulb.id:"+bulb+" Group.id:"+parsed.id);
 						}else{
-							
+							if(Bulbs[bulb].userid != userId){
+								callback(null,"User not authorized for bulb: "+bulb);
+							}
 							switch(parsed.method){
 								case 'put':
 									putAPICall(parsed,Bulbs[bulb],callback);
@@ -56,6 +73,9 @@ exports.parseMessage = function(message,Bulbs,user,callback){
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED Bulb.id:"+parsed.id);
 					}else{
+						if(Bulbs[parsed.id].userid != userId){
+							callback(null,"User not authorized for bulb: "+bulb);
+						}
 						switch(parsed.method){
 							case 'put':
 								putAPICall(parsed,Bulbs[parsed.id],callback);

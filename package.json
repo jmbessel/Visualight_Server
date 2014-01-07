@@ -27,7 +27,8 @@
     "validator": "~0.4.28",
     "colors": "0.x",
     "passport-localapikey": "0.0.3",
-    "passport": "~0.1.17"
+    "passport": "~0.1.17",
+    "node-uuid": "~1.4.1"
   },
   "private": true,
   "name": "node-login",

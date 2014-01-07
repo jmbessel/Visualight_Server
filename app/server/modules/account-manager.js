@@ -4,6 +4,7 @@ var Server 		= require('mongodb').Server;
 var moment 		= require('moment');
 var Mongo 		= require('mongodb').MongoClient;
 var colors 		= require('colors');
+var uuid      = require('node-uuid');
 
 colors.setTheme({
 
@@ -68,7 +69,15 @@ exports.sessionAuth = function(session_id, session, callback)
 				callback(null)
 			}else{
 				if(dbSess.user == session.user){ 
-					callback(session.user);
+					findByUser(session.user, function(e,o){
+						if(e != null){
+							console.log("No User");
+							callback(null);
+						}else{
+							callback(o);
+						}
+					});
+					//callback(session.user);
 				}else{
 				 console.log("USERS DONT MATCH");
 				 console.log('DB:'+dbSess);
@@ -79,6 +88,32 @@ exports.sessionAuth = function(session_id, session, callback)
 		}
 	})
 }
+
+/*
+exports.generateWebKey = function(id,callback){
+	var obj = { $set: {webkey: uuid.v4()}}
+	accounts.update({_id: getUserId(id)},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+
+exports.generateApiKey = function(id,callback){
+	var obj = { $set: {apikey: uuid.v4()}}
+	accounts.update({_id: getUserId(id)},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+*/
 
 exports.findByApiKey = function(apikey, callback) {
 	accounts.findOne({ apikey: apikey }, function (e, o) {
@@ -97,7 +132,7 @@ exports.userByApiKey = function(apikey, callback) {
 		if (o == null){
 			callback(null);
 		}	else{
-			callback(o.user);
+			callback(o._id);
 		}
   });
 }
@@ -267,7 +302,17 @@ exports.manualLogin = function(user, pass, callback)
 		}	else{
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
-					callback(null, o);
+					if(o.webkey == null){
+						generateWebKey(o._id,function(valid){
+							if(valid){
+								callback(null, o);
+							}else{
+								callback('webkey-error');
+							}
+						});
+					}else{
+						callback(null, o);
+					}
 				}	else{
 					callback('invalid-password');
 				}
@@ -585,6 +630,30 @@ var validatePassword = function(plainPass, hashedPass, callback)
 }
 
 /* auxiliary methods */
+
+var generateWebKey = function(id,callback){
+	var obj = { $set: {webkey: uuid.v4()}}
+	accounts.update({_id: id},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+var generateApiKey = function(id,callback){
+	var obj = { $set: {apikey: uuid.v4()}}
+	accounts.update({_id: id},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+
 var getGroupId =function(id){
 	return groups.db.bson_serializer.ObjectID.createFromHexString(id)
 }
@@ -609,7 +678,14 @@ var findById = function(id, callback)
 		else callback(null, res)
 	});
 };
-
+var findByUser = function(user, callback)
+{
+	accounts.findOne({user: user},
+		function(e, res) {
+		if (e) callback(e)
+		else callback(null, res)
+	});
+};
 
 var findByMultipleFields = function(a, callback)
 {
