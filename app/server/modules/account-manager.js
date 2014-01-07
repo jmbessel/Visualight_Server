@@ -132,7 +132,7 @@ exports.userByApiKey = function(apikey, callback) {
 		if (o == null){
 			callback(null);
 		}	else{
-			callback(o._id);
+			callback(o);
 		}
   });
 }

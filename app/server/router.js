@@ -386,7 +386,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  //AUTH.authCheck APIAUTH.validateApiKey
 app.post('/trigger',AUTH.authCheck,function(req,res,api){
 	
-	console.log('Got API Trigger');
+	console.log('Got API Trigger for user: '+req.user._id);
 	console.log(req.body);
 		var post = req.body;
 		
@@ -394,11 +394,22 @@ app.post('/trigger',AUTH.authCheck,function(req,res,api){
 			//console.log("parsing message");
 			if(o != null){ // the json was valid and we have a bulb object that is valid
 				//console.log("sending trigger");
-      	WS.sendTrigger(o);  // send this data to the visualight
-      	res.send(200);
+      	WS.sendTrigger(o,null,function(success){ // send this data to the visualight
+      		console.log("Getting Callback? " +success);
+	      	if(success == true){
+	      		//res.send(200);
+	      			var result = new Object();
+	      			result.status = "success"
+		      		res.writeHead(200,{'content-type':'text/json'});
+							res.end(JSON.stringify(result)); 
+	      	}else{
+		      	res.send(400);
+	      	}
+      	});  
+      	
       }else{
       	console.log(e.error); // we got an error from the api call -- NEED TO SEND THIS BACK TO THE CLIENT??
-      	res.send(400);
+      	res.send(e,400);
       }
 		})
 })

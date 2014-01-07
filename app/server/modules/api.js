@@ -19,11 +19,13 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 	try{
         var parsed = JSON.parse(message);
         //var userId
+        console.log("JSON Key: "+parsed.apikey+ " Passed Key: "+userId);
         if(parsed.apikey !=null || userId != null){
         	if(userId == null){
 	        	AM.userByApiKey(parsed.apikey,function(o){
 							if(o!=null){
 								userId = o;
+								console.log("UserID: "+userId);
 							}else{
 								callback(null,"API Key Lookup Failed");
 							}
@@ -71,10 +73,12 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 					
 					//TODO: Check and see if this bulb is registered to this user
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
-						callback(null,"BULB LOOKUP FAILED Bulb.id:"+parsed.id);
+						callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
 					}else{
+						//console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
 						if(Bulbs[parsed.id].userid != userId){
-							callback(null,"User not authorized for bulb: "+bulb);
+							callback(null,"User not authorized for bulb: "+parsed.id);
+							//throw 
 						}
 						switch(parsed.method){
 							case 'put':
@@ -96,7 +100,7 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
     }catch(e){
     	//this catch kicks if any of the operations in try fail.
     	//console.log("PARSE ERROR: " + e);
-        callback(null,"INVALID JSON: " + message);
+        callback(null,"INVALID JSON: " + message + " or Error: "+e);
     }
 }
 
