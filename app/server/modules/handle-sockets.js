@@ -17,8 +17,12 @@ colors.setTheme({
 var Bulbs = {}; //temp object of bulbs to start cross referenceing
                 //each object will contain mac address, socket.io client, netsocket client
 
+var Sockets = {}; //temp object for socketIO connections
+
 
 exports.returnBulbs =  Bulbs;
+
+exports.returnSockets =  Sockets;
 
 
 
@@ -115,7 +119,7 @@ exports.createSockets = function(app, io, AM){
                                                         if( Bulbs.hasOwnProperty(cleanbulbID) == false ){ //check if Bulbs[] exists
                                                                   console.log('Bulbs['.help+cleanbulbID.data+'] not defined'.help+' CREATING Bulbs['.help+cleanbulbID.data+']'.help);
                                                                   
-                                                                  Bulbs[cleanbulbID] = { _id: cleanbulbID, mac: mac, netsocket: socket };
+                                                                  Bulbs[cleanbulbID] = { _id: cleanbulbID, mac: mac, netsocket: socket, userid:sanitize(o.user).trim() };
                                                                   if(o.hasOwnProperty('color')){
                                                                   	//check if bulb group is different than last stored if so update color
                                                                   	//check bulb setting options
@@ -137,7 +141,7 @@ exports.createSockets = function(app, io, AM){
                                                                           Bulbs[cleanbulbID].netsocket.destroy(); //close our net socket
                                                                           delete Bulbs[cleanbulbID];
 
-                                                                          Bulbs[cleanbulbID] = {_id: cleanbulbID, mac: mac, netsocket: socket };
+                                                                          Bulbs[cleanbulbID] = {_id: cleanbulbID, mac: mac, netsocket: socket, userid:sanitize(o.user).trim() };
                                                                           connection_id = cleanbulbID;
                                                                   }else{
 																																					AM.updateBulbStatus(cleanbulbID,1,Bulbs[cleanbulbID].color,function(){}); // see if this is too many READ/WRITES
@@ -300,7 +304,7 @@ exports.createSockets = function(app, io, AM){
 
           socket.on('message', function(message) {        // handle a message from the client
                   //console.log(JSON.parse(message));
-                  API.parseMessage(message,Bulbs,function(o,e){ // this parses the json from the web socket
+                  API.parseMessage(message,Bulbs,null,function(o,e){ // this parses the json from the web socket
                   
                           if(o != null){ // the json was valid and we have a bulb object that is valid
                                   sendToVisualight(o);  // send this data to the visualight
@@ -336,7 +340,7 @@ exports.resetBulbMode = function(key){
  *
 */
 
-exports.sendTrigger = function(bulbObject,heartbeat){
+exports.sendTrigger = function(bulbObject,heartbeat,callback){
 		//console.log('Bulb Object'.error);
 		//console.log(bulbObject);
         if(!bulbObject.hasOwnProperty('alert')){
@@ -348,6 +352,8 @@ exports.sendTrigger = function(bulbObject,heartbeat){
         }
         
         heartbeat = typeof heartbeat !== 'undefined' ? heartbeat : false; // if we didnt define heartbeat then set it to false
+        
+        callback = typeof callback !== 'undefined' ? callback : false; // if we didnt define callback then set it to false
         
         var cleanbulbID = sanitize(bulbObject._id).trim();
 
@@ -370,6 +376,10 @@ exports.sendTrigger = function(bulbObject,heartbeat){
                     Bulbs[cleanbulbID].netsocket.write("x");  // stop character
 
                     Bulbs[cleanbulbID].color = bulbObject.color;
+                    if(callback !=null){
+                    	console.log("Calling back TRUE");
+											callback(true);
+										}
 
             	}else{
             		//send heartbeat
@@ -381,6 +391,9 @@ exports.sendTrigger = function(bulbObject,heartbeat){
                 Bulbs[cleanbulbID].netsocket.write("H");
         }else{
                 console.log("Visulight NOT CONNECTED: ".error + bulbObject._id.data); // the visualight is not connected
+                if(callback !=null){
+	                callback(false);
+                }
         }
 } //end sendToVisualight
 

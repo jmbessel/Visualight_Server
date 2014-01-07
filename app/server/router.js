@@ -3,6 +3,7 @@ var AM = require('./modules/account-manager');
 var EM = require('./modules/email-dispatcher');
 var WS = require('./modules/handle-sockets');
 var API = require('./modules/api');
+var APIAUTH = require('./modules/api-auth');
 var AUTH = require('./modules/auth');
 
 var colors = require('colors');
@@ -26,7 +27,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			WS.createSockets(app, io, AM); // then setup the sockets
 		}
 	});
-	
+
 	app.get('/test',AUTH.sessionCheck,function(req,res){
 		res.send('you\'ve made it');
 	})
@@ -67,7 +68,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
+			    req.session.webkey = o.webkey;
 			    res.cookie('sessionID',req.sessionID);
+			    res.cookie('webkey',req.session.webkey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });
@@ -85,7 +88,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
+			    req.session.webkey = o.webkey;
 			    res.cookie('sessionID',req.sessionID);
+			    res.cookie('webkey',req.session.webkey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
 				if (req.param('remember-me') == 'true'){
 					res.cookie('user', o.user, { maxAge: 900000 });
@@ -220,9 +225,9 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 * @method get /get-bulbs
 */	
 	app.get('/get-bulbs',AUTH.authCheck, function(req,res){
-		//console.log;
+		//console.log("get-bulbs: " + api);
 
-		    AM.getBulbsByUser(req.session.user, function(o){
+		    AM.getBulbsByUser(req.user.user, function(o){
 			    if(o){
 				    res.send(o,200);
 			    }else{
@@ -232,15 +237,14 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 	    
 		
 	});
-	app.get('/get-bulbs/:key', AUTH.authCheck, function(req,res){
-		var key = req.params.key;
-		AM.getBulbsByKey(key,function(o){
-			if(o){
-				    res.send(o,200);
-			    }else{
-				    res.send('bulbs-not-found', 400);
-			   }
-		})
+	app.get('/get-bulbs/:key',AUTH.authCheck, function(req,res){
+   	AM.getBulbsByUser(req.user.user, function(o){
+	    if(o){
+		    res.send(o,200);
+	    }else{
+		    res.send('bulbs-not-found', 400);
+	    }
+    });
 		
 	})
 
@@ -254,7 +258,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 */	
 	app.get('/get-groups', AUTH.authCheck, function(req,res){
 
-		    AM.getGroupsByUser(req.session.user, function(o){
+		    AM.getGroupsByUser(req.user.user, function(o){
 			    //console.log('AM.getGroups');console.log(o);
 			    if(o){
 				    res.send(o,200);
@@ -267,15 +271,14 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 	});
 	
 	app.get('/get-groups/:key', AUTH.authCheck, function(req,res){
-		var key = req.params.key;
-		AM.getGroupsByKey(key,function(o){
-			if(o){
-				    res.send(o,200);
-			    }else{
-				    res.send('bulbs-not-found', 400);
-			   }
-		})
-		
+    AM.getGroupsByUser(req.user.user, function(o){
+	    //console.log('AM.getGroups');console.log(o);
+	    if(o){
+		    res.send(o,200);
+	    }else{
+		    res.send('bulbs-not-found', 400);
+	    }
+    });
 	})
 	
 /***
@@ -291,7 +294,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 ***/	
 	app.post('/add-bulb', AUTH.authCheck, function(req,res){
 
-		    AM.addNewBulb(req.session.user,req.param('bulb'), function(e){ // this should be setup to use something other than the cookies. pass user in from check auth?
+		    AM.addNewBulb(req.user.user,req.param('bulb'), function(e){ // this should be setup to use something other than the cookies. pass user in from check auth?
 		    	console.log("add bulb request".help);
 			    if(e){
 				    res.send(e,400);
@@ -314,43 +317,32 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  *
  */
  
- app.post('/bulb/:key/update',AUTH.authCheck,function(req,res){
+ app.post('/bulb/:id/update',AUTH.authCheck,function(req,res){
  
 
-		var key = req.params.key;
+		var id = req.params.id;
 		var post = req.body;
 		console.log('BULB UPDATE REQUEST'.info)
 		console.log(key.help);
 		console.log(JSON.stringify(post).data);
 	
-		AM.updateBulbData(key,post,function(result){
+		AM.updateBulbData(id,post,function(result){
 			//res.send(result);
 			res.writeHead(200, {'content-type':'text/json'})
+			//res.write(result);
 			res.end(JSON.stringify(result))
 		})
 	
  })
  
- app.delete('/bulb/:key',AUTH.authCheck,function(req,res){
+ app.post('/group/:id/update',AUTH.authCheck,function(req,res){
 
-		 var key = req.params.key;
-		 
-		 AM.deleteBulb(key,function(result){
-		 	res.writeHead(200,{'content-type':'text/json'})
-		 	res.end(JSON.stringify(result));	
-		 }); 
-		 //delete the bulb 
-	 
- })
- 
- app.post('/group/:key/update',AUTH.authCheck,function(req,res){
-
- 		var key = req.params.key;
+ 		var id = req.params.id;
 		var post = req.body;
 		console.log('GROUP UPDATE REQUEST'.info) 
 		console.log(key.help);
 		console.log(JSON.stringify(post).data);
-		AM.updateGroupData(key,post,function(result){
+		AM.updateGroupData(id,post,function(result){
 			res.writeHead(200,{'content-type':'text/json'})
 			res.end(JSON.stringify(result))
 		})
@@ -358,11 +350,11 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  })
  /* TO DO: RETEST THIS
  */
- app.delete('/group/:key',AUTH.authCheck,function(req,res){
+ app.delete('/group/:id',AUTH.authCheck,function(req,res){
 
-		 var key = req.params.key;
+		 var id = req.params.id;
 		 
-		 AM.deleteGroup(key,function(result){
+		 AM.deleteGroup(id,function(result){
 		 	res.writeHead(200,{'content-type':'text/json'})
 		 	res.end(JSON.stringify(result));	
 		 }); 
@@ -371,11 +363,11 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  })
  /* TO DO: Test This shit.
  */
- app.delete('/bulb/:key',AUTH.authCheck,function(req,res){
+ app.delete('/bulb/:id',AUTH.authCheck,function(req,res){
 
-		 var key = req.params.key;
-		 WS.resetBulbMode(key);
-		 AM.deleteBulb(key,function(result){
+		 var id = req.params.id;
+		 WS.resetBulbMode(id);
+		 AM.deleteBulb(id,function(result){
 			res.writeHead(200,{'content-type':'text/json'});
 			res.end(JSON.stringify(result)); 
 		 })
@@ -391,28 +383,35 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  *	@method post /trigger/:key
  * 	@param {JSON OBJECT} bulbObj 
  */ 
- 
-app.post('/trigger/:key',AUTH.authCheck,function(req,res){
+ //AUTH.authCheck APIAUTH.validateApiKey
+app.post('/trigger',AUTH.authCheck,function(req,res,api){
 	
-	console.log('Got Trigger');
-	console.log(req.body)
-	
-
-		var key = req.params.key;
+	console.log('Got API Trigger for user: '+req.user._id);
+	console.log(req.body);
 		var post = req.body;
 		
-		API.parseMessage(JSON.stringify(post), WS.returnBulbs,function(o,e){ 
-			
+		API.parseMessage(JSON.stringify(post), WS.returnBulbs, req.user._id, function(o,e){ 
+			//console.log("parsing message");
 			if(o != null){ // the json was valid and we have a bulb object that is valid
-              WS.sendTrigger(o);  // send this data to the visualight
-
-            }else{
-              console.log(e.error); // we got an error from the api call -- NEED TO SEND THIS BACK TO THE CLIENT??
-
-            }
-			
+				//console.log("sending trigger");
+      	WS.sendTrigger(o,null,function(success){ // send this data to the visualight
+      		console.log("Getting Callback? " +success);
+	      	if(success == true){
+	      		//res.send(200);
+	      			var result = new Object();
+	      			result.status = "success"
+		      		res.writeHead(200,{'content-type':'text/json'});
+							res.end(JSON.stringify(result)); 
+	      	}else{
+		      	res.send(400);
+	      	}
+      	});  
+      	
+      }else{
+      	console.log(e.error); // we got an error from the api call -- NEED TO SEND THIS BACK TO THE CLIENT??
+      	res.send(e,400);
+      }
 		})
-
 })
  
 /** 
@@ -427,7 +426,7 @@ app.post('/trigger/:key',AUTH.authCheck,function(req,res){
 
   app.post('/bind-group', AUTH.authCheck,function(req,res){
 	  		
-  			AM.addNewGroup(req.session.user,req.body,function(e){
+  			AM.addNewGroup(req.user.user,req.body,function(e){
   				console.log('add group request'.help);
   				if(e){
   					res.send(e,400);

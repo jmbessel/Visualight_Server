@@ -1,13 +1,17 @@
 // preset form values if we receive a userdata object //
 - user = typeof(udata) != 'undefined' ? udata : {}
 // store the userId on the client side in a hidden input field //
-input(type='hidden', value= user._id)#userId
+input(type='hidden', value= user)#userId
 
 div.navbar
 	div.container
 		div.nav-collapse
 			ul#global-nav.nav.pull-left
 				a(href='/home').brand My Account
+			ul#global-nav.nav.pull-left
+				a(href='https://github.com/lpercifield/visualight/wiki').brand Docs
+			ul#global-nav.nav.pull-left
+				a(href='http://forum.visualight.org').brand Forum
 		button#btn-logout.btn.btn-primary.pull-right
 			i.icon-lock.icon-white
 			| Sign Out
@@ -33,9 +37,9 @@ div.navbar
 
 	div.current(style="display:none")
 		h1(style="display:inline; vertical-align: middle;")
+		br
 		button(type="button", style="display:inline; vertical-align: middle;").btn.btn-mini#settings SETTINGS
-		button(type="button", style="display:inline; vertical-align:middle;").btn.btn-mini.btn-primary#save SET AS START COLOR
-		button(type="button", style="display:inline; vertical-align: middle;").btn.btn-mini.btn-danger#delete DELETE	
+
 		
 
 	h1#nobulbs(style="display:none")
@@ -50,8 +54,10 @@ div.navbar
 					input(type="text", name="name").name.input-xlarge
 					input(type="hidden", name="key").id
 					button(type="button").btn#update Update
+					button(type="button", style="display:inline; vertical-align:middle;").btn.btn-primary#save SET AS START COLOR
+					button(type="button", style="display:inline; vertical-align: middle;").btn.btn-danger#delete DELETE	
 
-			h3 Bulb Status:
+			h3 Control Status:
 			span#status
 			form#form-inline
 				input(id="open", type="button", value="Connect")
@@ -63,14 +69,17 @@ div.navbar
 				#picker
 		div#alerts
 			button(type="button")#sendAlert.btn.btn-danger Send Alert
-			label Duration
+			label Duration (seconds)
 			div#duration
-			label Frequency
+			label Frequency (slow - fast)
 			div#frequency
-			label Type
-			div#type
-			div.container
-				div#slider
+			div#type.btn-group(data-toggle="buttons-radio")
+				button(type="button", data-value="0").btn.active.btn-primary Fade
+				button(type="button", data-value="1").btn.btn-primary Blink
+			//label Type
+			//div#type
+			//div.container
+			//div#slider
 			
 		
 

@@ -4,6 +4,7 @@ var Server 		= require('mongodb').Server;
 var moment 		= require('moment');
 var Mongo 		= require('mongodb').MongoClient;
 var colors 		= require('colors');
+var uuid      = require('node-uuid');
 
 colors.setTheme({
 
@@ -53,7 +54,7 @@ exports.sessionAuth = function(session_id, session, callback)
 		//console.log(o);
 		if(!o){
 			console.log("NO SESSION FOUND");
-			callback(false);
+			callback(null);
 		}else{
 			
 			try{
@@ -65,19 +66,75 @@ exports.sessionAuth = function(session_id, session, callback)
 			
 			if(!dbSess.hasOwnProperty('user')){
 				console.log("NO USER FOUND");
-				callback(false)
+				callback(null)
 			}else{
 				if(dbSess.user == session.user){ 
-					callback(true);
+					findByUser(session.user, function(e,o){
+						if(e != null){
+							console.log("No User");
+							callback(null);
+						}else{
+							callback(o);
+						}
+					});
+					//callback(session.user);
 				}else{
 				 console.log("USERS DONT MATCH");
 				 console.log('DB:'+dbSess);
 				 console.log('session: '+session.user);
-				 callback(false)
+				 callback(null)
 				}
 			}
 		}
 	})
+}
+
+/*
+exports.generateWebKey = function(id,callback){
+	var obj = { $set: {webkey: uuid.v4()}}
+	accounts.update({_id: getUserId(id)},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+
+exports.generateApiKey = function(id,callback){
+	var obj = { $set: {apikey: uuid.v4()}}
+	accounts.update({_id: getUserId(id)},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+*/
+
+exports.findByApiKey = function(apikey, callback) {
+	accounts.findOne({ apikey: apikey }, function (e, o) {
+		//console.log("API KEY: "+apikey);
+		if (o == null){
+			callback("key-not-found",null);
+		}	else{
+			callback(true);
+		}
+  });
+}
+
+exports.userByApiKey = function(apikey, callback) {
+	accounts.findOne({ apikey: apikey }, function (e, o) {
+		//console.log("API KEY: "+apikey);
+		if (o == null){
+			callback(null);
+		}	else{
+			callback(o);
+		}
+  });
 }
 
 /* socket validation methods */
@@ -158,10 +215,11 @@ exports.deleteGroup = function(key,callback)
 
 exports.deleteBulb = function(key,callback)
 {
-	bulbs.remove({_id: getBulbId(key)},function(e){
+	bulbs.remove({_id: getBulbId(key)},function(e,o){
 		var result = new Object();
-		
-		if(e){ result.status = 'error';
+		if(e == null && o == 0){ 
+			result.status = 'visualight not found'
+		}else if(e){ result.status = 'error';
 			   result.details = e;
 		}else{ result.status = 'deleted';
 			   result.details = {key: key};
@@ -177,10 +235,13 @@ exports.updateBulbData = function(key,post,callback)
 	
 	bulbs.update({_id:getBulbId(key)},obj, true, function(e,o){
 		var result = new Object();
-		
-		if(e){ result.status = 'error';
-			   result.details = e;
-		}else{ result.status = 'success';
+		if(e == null && o == 0){ 
+			result.status = 'visualight not found';
+		}else if(e){
+			result.status = "error";
+			result.details = e;
+		}else{
+			result.status = 'success';
 		}
 		callback(result)
 	})
@@ -241,7 +302,17 @@ exports.manualLogin = function(user, pass, callback)
 		}	else{
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
-					callback(null, o);
+					if(o.webkey == null){
+						generateWebKey(o._id,function(valid){
+							if(valid){
+								callback(null, o);
+							}else{
+								callback('webkey-error');
+							}
+						});
+					}else{
+						callback(null, o);
+					}
 				}	else{
 					callback('invalid-password');
 				}
@@ -559,6 +630,30 @@ var validatePassword = function(plainPass, hashedPass, callback)
 }
 
 /* auxiliary methods */
+
+var generateWebKey = function(id,callback){
+	var obj = { $set: {webkey: uuid.v4()}}
+	accounts.update({_id: id},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+var generateApiKey = function(id,callback){
+	var obj = { $set: {apikey: uuid.v4()}}
+	accounts.update({_id: id},obj,true,function(e,o){
+		if(e!=null){
+			console.log("WebKey Generation Error: "+e);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	})
+}
+
 var getGroupId =function(id){
 	return groups.db.bson_serializer.ObjectID.createFromHexString(id)
 }
@@ -583,7 +678,14 @@ var findById = function(id, callback)
 		else callback(null, res)
 	});
 };
-
+var findByUser = function(user, callback)
+{
+	accounts.findOne({user: user},
+		function(e, res) {
+		if (e) callback(e)
+		else callback(null, res)
+	});
+};
 
 var findByMultipleFields = function(a, callback)
 {

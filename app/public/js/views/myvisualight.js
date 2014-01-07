@@ -77,10 +77,11 @@ $(document).ready(function(){
 	    //freqtip.hide()
 	})
 	
-	$("#type").slider({
+	/*
+$("#type").slider({
 	    value: 0,
 	    min: 0,
-	    max: 2,
+	    max: 1,
 	    slide: function(event, ui) {
 	        typetip.text(ui.value);
 	    },
@@ -90,6 +91,7 @@ $(document).ready(function(){
 	}, function() {
 	    //typetip.hide()
 	})
+*/
 	
 	setupVisualightButtons();
 	connectSocket();
@@ -352,7 +354,7 @@ $(document).ready(function(){
 	      if(!state.hasOwnProperty('on')){
 		      alert('Change Color first!');
 	      }else{
-		      state.alert = { duration: $( "#duration" ).slider( "value" ), frequency: $( "#frequency" ).slider( "value" ), type: $( "#type" ).slider( "value" )};
+		      state.alert = { duration: $( "#duration" ).slider( "value" ), frequency: $( "#frequency" ).slider( "value" ), type: $("#type .active").data("value")};
 		      sendAPICall(state);
 		  }
       })
