@@ -20,22 +20,87 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 	try{
         var parsed = JSON.parse(message);
         //var userId
-        //console.log("JSON Key: "+parsed.apikey+ " Passed Key: "+userId);
-        if(parsed.apikey !=null || userId != null){
-        	if(userId == null){
+        //console.log("JSON Key: "+parsed.apikey+ " Passed ID: "+userId);
+        //if(parsed.apikey !=null || userId != null){
+        	if(userId == null && parsed.apikey !=null){
 	        	AM.userByApiKey(parsed.apikey,function(o){
+		        	//console.log("USER By API KEY");
 							if(o!=null){
 								userId = sanitize(o._id).trim();
-								console.log("UserID: "+userId);
+								//console.log("UserID: "+userId);
+								if(parsed.id != null){
+									//console.log("PARSED: "+parsed.type);
+					
+									if(parsed.type === 'group'){
+										
+										AM.getGroupBulbs(parsed.id,function(g){
+										if(g==null) callback(null,"GROUPS ERROR");
+										//TODO: Check and see if this group is registered to this user
+										g.bulbs.forEach(function(bulb){
+										
+											
+											if(Bulbs.hasOwnProperty(bulb)==false){ 
+												callback(null,"BULB LOOKUP FAILED Bulb.id:"+bulb+" Group.id:"+parsed.id);
+											}else{
+												if(Bulbs[bulb].userid != userId){
+													callback(null,"User not authorized for bulb: "+bulb);
+												}
+												switch(parsed.method){
+													case 'put':
+														putAPICall(parsed,Bulbs[bulb],callback);
+														break;
+													case 'get':
+														callback(Bulbs[bulb]);//must ensure the rgbw gets set before sending back this object
+														break;
+													default:
+														callback(null,"API TYPE NOT DEFINED")
+														break;
+												}
+											}//end if Bubls
+											
+											
+										})//end for each
+										})//end am.getGroupBulbs
+									}else{
+										//console.log("bulb here");
+										
+										//TODO: Check and see if this bulb is registered to this user
+										if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
+											callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
+										}else{
+											console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
+											if(Bulbs[parsed.id].userid != userId){
+												callback(null,"User not authorized for bulb: "+parsed.id);
+												return;
+											}
+											switch(parsed.method){
+												case 'put':
+													putAPICall(parsed,Bulbs[parsed.id],callback);
+													break;
+												case 'get':
+													callback(Bulbs[parsed.id]); //must ensure the rgbw gets set before sending back this object
+													break;
+												default:
+													callback(null,"API TYPE NOT DEFINED");
+													break;
+											}
+										}//endifBulbs
+					
+									}//end if group
+					
+					       }//ifparsed.id!=null
 							}else{
 								callback(null,"API Key Lookup Failed");
 							}
 						});
         	}
-				}else{
+				/*
+}else{
 					callback(null, "API Key Not Passed");
 				}
+*/
         //console.log("INCOMING MESSAGE: " + message);
+				else if(userId != null){
         if(parsed.id != null){
 				//console.log("PARSED: "+parsed.type);
 
@@ -76,7 +141,7 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
 					}else{
-						console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
+						//console.log("Bulbs UserID: "+Bulbs[parsed.id].userid+" Passed UserID: "+userId);
 						if(Bulbs[parsed.id].userid != userId){
 							callback(null,"User not authorized for bulb: "+parsed.id);
 							return;
@@ -98,6 +163,7 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 
        }//ifparsed.id!=null
         
+     }   
     }catch(e){
     	//this catch kicks if any of the operations in try fail.
     	//console.log("PARSE ERROR: " + e);
@@ -142,6 +208,8 @@ var putAPICall = function(parsed, bulbObject, callback){
 			case 'id':
 				break;
 			case 'type':
+				break;
+			case 'apikey':
 				break;
 			default:
 				callback(null,"PARAMETER IGNORED: " + parsed[keyname]);

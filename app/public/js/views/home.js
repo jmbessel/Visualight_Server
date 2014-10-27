@@ -36,6 +36,8 @@ $(document).ready(function(){
 	$('#account-form-btn1').html('Delete');
 	$('#account-form-btn1').addClass('btn-danger');
 	$('#account-form-btn2').html('Update');
+	$('#apikey-form-btn1').html('RESET');
+	$('#apikey-form-btn1').addClass('btn-danger');
 
 // setup the confirm window that displays when the user chooses to delete their account //
 

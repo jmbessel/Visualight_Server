@@ -377,7 +377,7 @@ exports.sendTrigger = function(bulbObject,heartbeat,callback){
 
                     Bulbs[cleanbulbID].color = bulbObject.color;
                     if(callback !=null){
-                    	console.log("Calling back TRUE");
+                    	//console.log("Calling back TRUE");
 											callback(true);
 										}
 

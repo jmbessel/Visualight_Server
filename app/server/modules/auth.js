@@ -4,7 +4,10 @@ var AM = require('./account-manager');
 exports.sessionCheck = function(req, res, next){
 	//console.log(req.session);
 	AM.sessionAuth(req.cookies['connect.sid'],req.session, function(valid){
-		if(valid != null) next();
+		if(valid != null){
+			req.user = valid;
+			next();
+		}
 		else res.redirect('/login');
 	})
 

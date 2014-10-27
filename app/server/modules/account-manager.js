@@ -137,6 +137,21 @@ exports.userByApiKey = function(apikey, callback) {
   });
 }
 
+/* reset users API key */
+
+exports.resetAPIKey = function(user,callback)
+{	
+	generateApiKey(user,function(valid,newO){
+		if(valid){
+			console.log("Reset API Key: "+newO);
+			callback(null, newO);
+		}else{
+			callback('webkey-error');
+		}
+	});
+}
+
+
 /* socket validation methods */
 
 exports.validateSession = function(session, callback)
@@ -303,9 +318,9 @@ exports.manualLogin = function(user, pass, callback)
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
 					if(o.apikey == null){
-						generateApiKey(o._id,function(valid){
+						generateApiKey(o._id,function(valid,newKey){
 							if(valid){
-								callback(null, o);
+								callback(null, newKey);
 							}else{
 								callback('webkey-error');
 							}
@@ -643,13 +658,15 @@ var generateWebKey = function(id,callback){
 	})
 }
 var generateApiKey = function(id,callback){
-	var obj = { $set: {apikey: uuid.v4()}}
+	var key = uuid.v4();
+	var obj = { $set: {apikey: key}}
 	accounts.update({_id: id},obj,true,function(e,o){
 		if(e!=null){
-			console.log("WebKey Generation Error: "+e);
+			console.log("APIKEY Generation Error: "+e);
 			callback(false);
 		}else{
-			callback(true);
+			console.log("APIKEY Generation complete");
+			callback(true,key);
 		}
 	})
 }

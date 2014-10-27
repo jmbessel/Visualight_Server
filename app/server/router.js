@@ -68,7 +68,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
-			    req.session.apikey = o.apikey;
+			    req.session.apikey = o.apikey; // generate one if this is an older user
 			    res.cookie('sessionID',req.sessionID);
 			    res.cookie('apikey',req.session.apikey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
@@ -88,7 +88,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			}	else{
 				//log in our user with a session
 			    req.session.user = o.user;
-			    req.session.apikey = o.apikey;
+			    req.session.apikey = o.apikey; // generate one if this is an older user
 			    res.cookie('sessionID',req.sessionID);
 			    res.cookie('apikey',req.session.apikey);
 			    console.log('User Authenticated: '.info+o.user+' Session: '.info+JSON.stringify(req.session).data)
@@ -111,12 +111,11 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 */
 
 	app.get('/home',AUTH.sessionCheck, function(req, res) {
-
 			res.render('home', {
 				locals: {
 					title : 'Control Panel',
 					countries : CT,
-					udata : req.session.user
+					udata : req.user
 				}
 			});
 	    
@@ -133,7 +132,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			res.render('myvisualight', {
 				locals: {
 					title : 'My Visualights',
-					udata : req.session.user
+					udata : req.user
 				}
 			});
 	    
@@ -149,7 +148,7 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 * @param {String} country the users country
 * @param {String} pass password
 */	
-	app.post('/home', function(req, res){
+	app.post('/home',AUTH.sessionCheck, function(req, res){
 		if (req.param('user') != undefined) {
 			AM.updateAccount({
 				user 		: req.param('user'),
@@ -174,6 +173,20 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
 			res.clearCookie('user');
 			res.clearCookie('pass');
 			req.session.destroy(function(e){ res.send('ok', 200); });
+		}else if (req.param('apireset') == 'true'){
+			console.log("reseting api key for user: "+req.user._id);
+			AM.resetAPIKey(req.user._id,function(e, o){
+				if (e){
+					res.send('error-reseting-apikey', 400);
+				}	else{
+					res.clearCookie('apikey');
+					//req.user = o;
+					req.session.apikey = o; // generate one if this is an older user
+					console.log("new key: "+req.session.apikey);
+					res.cookie('apikey',req.session.apikey);
+					res.send('ok', 200);
+				}
+			})
 		}
 	});
 	
@@ -386,8 +399,8 @@ module.exports = function(app, io, sStore) { // this gets called from the main a
  //AUTH.authCheck APIAUTH.validateApiKey
 app.post('/trigger',AUTH.authCheck,function(req,res,api){
 	
-	console.log('Got API Trigger for user: '+req.user._id);
-	console.log(req.body);
+	//console.log('Got API Trigger for user: '+req.user._id);
+	//console.log(req.body);
 		var post = req.body;
 		
 		API.parseMessage(JSON.stringify(post), WS.returnBulbs, req.user._id, function(o,e){ 
@@ -395,7 +408,7 @@ app.post('/trigger',AUTH.authCheck,function(req,res,api){
 			if(o != null){ // the json was valid and we have a bulb object that is valid
 				//console.log("sending trigger");
       	WS.sendTrigger(o,null,function(success){ // send this data to the visualight
-      		console.log("Getting Callback? " +success);
+      		//console.log("Getting Callback? " +success);
 	      	if(success == true){
 	      		//res.send(200);
 	      			var result = new Object();
