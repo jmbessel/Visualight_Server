@@ -1,5 +1,5 @@
 
-var ES = require('./email-settings-default');
+var ES = require('./email-settings');
 var EM = {};
 module.exports = EM;
 
