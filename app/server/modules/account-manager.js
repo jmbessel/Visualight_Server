@@ -27,7 +27,7 @@ var groups;
 
 
 exports.connectServer = function(callback){
-	Mongo.connect("mongodb://10.0.0.4:27019/visualight", {auto_reconnect: true}, function(err, db) {
+	Mongo.connect("mongodb://10.0.0.4/visualight", {auto_reconnect: true}, function(err, db) {
 				console.log("connecting to DB...");
 			if (err) {
 				console.log(err);
