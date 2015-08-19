@@ -27,7 +27,7 @@ var groups;
 
 
 exports.connectServer = function(callback){
-	Mongo.connect("mongodb://localhost:27017/visualight", {auto_reconnect: true}, function(err, db) {
+	Mongo.connect("mongodb://10.0.0.4:27019/visualight", {auto_reconnect: true}, function(err, db) {
 				console.log("connecting to DB...");
 			if (err) {
 				console.log(err);
@@ -40,7 +40,7 @@ exports.connectServer = function(callback){
 				groups = db.collection('groups');
 				callback(null);
 			}
-	}); 
+	});
 }
 exports.sessionAuth = function(session_id, session, callback)
 {
@@ -49,26 +49,26 @@ exports.sessionAuth = function(session_id, session, callback)
 	//return true or false
 
 	//console.log(session_id);
-	
+
 	sessions.findOne({_id: session_id },function(e,o){
 		//console.log(o);
 		if(!o){
 			console.log("NO SESSION FOUND");
 			callback(null);
 		}else{
-			
+
 			try{
 				var dbSess = JSON.parse(o.session)
 			}catch(e){
 				console.error('PARSE ERROR');
 				console.error(e);
 			}
-			
+
 			if(!dbSess.hasOwnProperty('user')){
 				console.log("NO USER FOUND");
 				callback(null)
 			}else{
-				if(dbSess.user == session.user){ 
+				if(dbSess.user == session.user){
 					findByUser(session.user, function(e,o){
 						if(e != null){
 							console.log("No User");
@@ -140,7 +140,7 @@ exports.userByApiKey = function(apikey, callback) {
 /* reset users API key */
 
 exports.resetAPIKey = function(user,callback)
-{	
+{
 	generateApiKey(user,function(valid,newO){
 		if(valid){
 			console.log("Reset API Key: "+newO);
@@ -155,7 +155,7 @@ exports.resetAPIKey = function(user,callback)
 /* socket validation methods */
 
 exports.validateSession = function(session, callback)
-{	
+{
 	console.log(session);
 	sessions.findOne({_id:session}, function(e, o) {
 		if (o == null){
@@ -169,7 +169,7 @@ exports.validateSession = function(session, callback)
 /* get current bulb information*/
 
 exports.getBulbInfo = function(id, callback)
-{	
+{
 	//console.log("bulbId" + id);
 	bulbs.findOne({_id: getBulbId(id)}, function(e, o) {
 		if (o == null){
@@ -184,7 +184,7 @@ exports.getBulbInfo = function(id, callback)
 
 exports.updateBulbLogoff=function(id,color,callback){
 	//set last color state on logoff
-	//set status to 0 aka offline 
+	//set status to 0 aka offline
 	var obj = { $set: {color: color, lastOnline: new Date(), status:0 }}
 	bulbs.update({_id: getBulbId(id)},obj,true,function(e,o){
 
@@ -196,11 +196,11 @@ exports.updateBulbLogoff=function(id,color,callback){
 
 /* sets current bulb status*/
 exports.updateBulbStatus = function(id, online, color, callback)
-{	
+{
 	//var online = 0or1
 	//offline = 0
 	//online = 1
-	
+
 	var obj = {$set: {color: color, lastOnline: new Date(), status:online }};
 	bulbs.update({_id:getBulbId(id)},obj,true,function(e,o){
 		callback(null)
@@ -217,22 +217,22 @@ exports.deleteGroup = function(key,callback)
 {
 	groups.remove({_id: getBulbId(key)},function(e){
 		var result = new Object();
-		
+
 		if(e){ result.status = 'error';
 			   result.details = e;
 		}else{ result.status = 'deleted';
 			   result.details = {key: key};
 		}
 		callback(result)
-	})	
-	
+	})
+
 }
 
 exports.deleteBulb = function(key,callback)
 {
 	bulbs.remove({_id: getBulbId(key)},function(e,o){
 		var result = new Object();
-		if(e == null && o == 0){ 
+		if(e == null && o == 0){
 			result.status = 'visualight not found'
 		}else if(e){ result.status = 'error';
 			   result.details = e;
@@ -240,17 +240,17 @@ exports.deleteBulb = function(key,callback)
 			   result.details = {key: key};
 		}
 		callback(result)
-	})	
-	
+	})
+
 }
 exports.updateBulbData = function(key,post,callback)
-{	
+{
 	if(post.options) var obj = {$set:{name:post.name,options:post.options}};
 	else var obj = {$set:{name:post.name}};
-	
+
 	bulbs.update({_id:getBulbId(key)},obj, true, function(e,o){
 		var result = new Object();
-		if(e == null && o == 0){ 
+		if(e == null && o == 0){
 			result.status = 'visualight not found';
 		}else if(e){
 			result.status = "error";
@@ -266,7 +266,7 @@ exports.updateGroupData =function(key,post,callback)
 {
 
 	var obj = {$set: {name: post.name, bulbs: post.bulbs }}
-	
+
 	groups.update({_id: getGroupId(key)},obj,true,function(e,o){
 		var result = new Object();
 		if(e){ result.status = 'error';
@@ -274,9 +274,9 @@ exports.updateGroupData =function(key,post,callback)
 		}else{ result.status= 'success';
 		}
 		callback(result)
-		
+
 	})
-	
+
 }
 
 /* get current bulb information*/
@@ -288,7 +288,7 @@ exports.checkBulbAuth = function(macAdd, callback)
 		if (o == null){
 			//console.log("error "+e);
 			callback(null);
-			
+
 		}else{
 			//console.log(o);
 			callback(o);
@@ -362,13 +362,13 @@ exports.addNewAccount = function(newData, callback)
 
 exports.addNewGroup = function(user, post, callback){
 
-	//collect post data 
+	//collect post data
 	//process post data
 	console.log("Incoming Data: ".help+JSON.stringify(post).data);
 
-	//find user 
+	//find user
 	accounts.findOne({user:user},function(e,o){
-		if(e){ 
+		if(e){
 			callback('Accounts Database Error: '+e);
 		}else if(o == null){
 			callback('user-not-found');
@@ -387,16 +387,16 @@ exports.addNewGroup = function(user, post, callback){
 				if(e){
 					callback('Groups Database Insert Error: '+e);
 				}else{
-					callback(); 
+					callback();
 				}
 			});
 
-			
+
 		}
 	})
 
 
-	//check group name 
+	//check group name
 }
 
 exports.addNewBulb = function(user, bulbMac, callback)
@@ -421,8 +421,8 @@ exports.addNewBulb = function(user, bulbMac, callback)
 					bulb.user = o._id;
 					console.log('Creating BULB'.info);
 					bulbs.count({user:o._id},function(err,count){
-						if(err){ bulb.name = "Newest Visualight" 
-						}else{ 
+						if(err){ bulb.name = "Newest Visualight"
+						}else{
 						console.log('User:'.help+o._id+' Bulb Count: '.help+count);
 							bulb.name = "Visualight "+(count+1);
 						}
@@ -435,9 +435,9 @@ exports.addNewBulb = function(user, bulbMac, callback)
 								var myBulb = new Object();
 								myBulb.name = "Visualight "+(o.bulbs.length+1);
 								myBulb.id = item._id;
-								
-								//no longer storing bulbs into the account information 
-								
+
+								//no longer storing bulbs into the account information
+
 								//o.bulbs.push(myBulb);
 								//o.bulbs = bulbArray;
 								//console.log(o.bulbs);
@@ -459,7 +459,7 @@ exports.addNewBulb = function(user, bulbMac, callback)
 
 }
 exports.getGroupBulbs = function(id,callback)
-{	
+{
 //console.log("INCOMING Group ID: "+id )
 	groups.findOne({_id: getGroupId(id)}, function(e,g){
 		if(g ==null){
@@ -484,10 +484,10 @@ exports.getGroupsByKey = function(key,callback)
 			callback(g);
 		}
 	})
-		
+
 }
 exports.getBulbsByKey = function(key, callback)
-{	
+{
 
 	bulbs.find({user:getUserId(key)}).toArray(function(e,b){
 		if(e){
@@ -495,14 +495,14 @@ exports.getBulbsByKey = function(key, callback)
 			callback('DB ERROR: '+e)
 		}else if(b==null){
 			callback('bulbs-not-found')
-				
+
 		}else{
 			//TO DO:
 			//delete the fields we want to hide from b and send it back
 			callback(b);
 		}
 	})
-			
+
 
 }
 exports.getGroupsByUser = function(user,callback)
@@ -529,7 +529,7 @@ exports.getGroupsByUser = function(user,callback)
 }
 
 exports.getBulbsByUser = function(user, callback)
-{	
+{
 	//console.log(user);
 	accounts.findOne({user:user}, function(e, o) {
 		if (o == null){
@@ -541,14 +541,14 @@ exports.getBulbsByUser = function(user, callback)
 					callback('DB ERROR: '+e)
 				}else if(b==null){
 					callback('bulbs-not-found')
-						
+
 				}else{
 					//TO DO:
 					//delete the fields we want to hide from b and send it back
 					callback(b);
 				}
 			})
-			
+
 		}
 	});
 }

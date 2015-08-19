@@ -3,8 +3,8 @@
  * Node.js Login Boilerplate
  * Author : Stephen Braitsch
  * More Info : http://bit.ly/LsODY8
- 
- * MODIFIED BY Leif Percifield 
+
+ * MODIFIED BY Leif Percifield
  * visualight.org
  */
 
@@ -29,7 +29,7 @@ io.set('log level', 1);
 var MongoStore = require('connect-mongo')(exp);// Setup mongo store to store user sessions in the db
 
 app.root = __dirname; // setup the app directory
-global.host = 'localhost'; // setup the app url
+global.host = 'visualight.cloudapp.net'; // setup the app url
 
 require('./app/config')(app, exp, MongoStore); // run the config.js
 require('./app/server/router')(app, io, MongoStore);// run the server/router.js
