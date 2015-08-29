@@ -4,7 +4,7 @@ var IO = require('./handle-sockets');
 var sanitize = require('validator').sanitize;
 
 exports.setup = function(AM){
-	
+
 }
 
 
@@ -14,7 +14,7 @@ exports.setup = function(AM){
 */
 exports.parseMessage = function(message,Bulbs,userId,callback){
 
-	
+
 	//DEAL WITH API KEY
 	//build response json?
 	try{
@@ -22,24 +22,25 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
         //var userId
         //console.log("JSON Key: "+parsed.apikey+ " Passed ID: "+userId);
         //if(parsed.apikey !=null || userId != null){
-        	if(userId == null && parsed.apikey !=null){
-	        	AM.userByApiKey(parsed.apikey,function(o){
+        	//if(userId == null && parsed.apikey !=null){
+						if(userId == null){
+	        	//AM.userByApiKey(parsed.apikey,function(o){
 		        	//console.log("USER By API KEY");
-							if(o!=null){
-								userId = sanitize(o._id).trim();
+							//if(o!=null){
+								//userId = sanitize(o._id).trim();
 								//console.log("UserID: "+userId);
 								if(parsed.id != null){
 									//console.log("PARSED: "+parsed.type);
-					
+
 									if(parsed.type === 'group'){
-										
+
 										AM.getGroupBulbs(parsed.id,function(g){
 										if(g==null) callback(null,"GROUPS ERROR");
 										//TODO: Check and see if this group is registered to this user
 										g.bulbs.forEach(function(bulb){
-										
-											
-											if(Bulbs.hasOwnProperty(bulb)==false){ 
+
+
+											if(Bulbs.hasOwnProperty(bulb)==false){
 												callback(null,"BULB LOOKUP FAILED Bulb.id:"+bulb+" Group.id:"+parsed.id);
 											}else{
 												if(Bulbs[bulb].userid != userId){
@@ -57,13 +58,13 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 														break;
 												}
 											}//end if Bubls
-											
-											
+
+
 										})//end for each
 										})//end am.getGroupBulbs
 									}else{
 										//console.log("bulb here");
-										
+
 										//TODO: Check and see if this bulb is registered to this user
 										if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 											callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
@@ -85,14 +86,14 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 													break;
 											}
 										}//endifBulbs
-					
+
 									}//end if group
-					
+
 					       }//ifparsed.id!=null
-							}else{
-								callback(null,"API Key Lookup Failed");
-							}
-						});
+							// }else{
+							// 	callback(null,"API Key Lookup Failed");
+							// }
+						//});// API auth, working to remove
         	}
 				/*
 }else{
@@ -105,14 +106,14 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 				//console.log("PARSED: "+parsed.type);
 
 				if(parsed.type === 'group'){
-					
+
 					AM.getGroupBulbs(parsed.id,function(g){
 					if(g==null) callback(null,"GROUPS ERROR");
 					//TODO: Check and see if this group is registered to this user
 					g.bulbs.forEach(function(bulb){
-					
-						
-						if(Bulbs.hasOwnProperty(bulb)==false){ 
+
+
+						if(Bulbs.hasOwnProperty(bulb)==false){
 							callback(null,"BULB LOOKUP FAILED Bulb.id:"+bulb+" Group.id:"+parsed.id);
 						}else{
 							if(Bulbs[bulb].userid != userId){
@@ -130,13 +131,13 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 									break;
 							}
 						}//end if Bubls
-						
-						
+
+
 					})//end for each
 					})//end am.getGroupBulbs
 				}else{
 					//console.log("bulb here");
-					
+
 					//TODO: Check and see if this bulb is registered to this user
 					if( Bulbs.hasOwnProperty(parsed.id) == false ){ //check if Bulbs[] exists
 						callback(null,"BULB LOOKUP FAILED OR BULB OFFLINE: Bulb.id:"+parsed.id);
@@ -162,8 +163,8 @@ exports.parseMessage = function(message,Bulbs,userId,callback){
 				}//end if group
 
        }//ifparsed.id!=null
-        
-     }   
+
+     }
     }catch(e){
     	//this catch kicks if any of the operations in try fail.
     	//console.log("PARSE ERROR: " + e);
@@ -222,7 +223,7 @@ var putAPICall = function(parsed, bulbObject, callback){
 	bulbObject.color.g = parseInt(rgb.g);
 	bulbObject.color.b = parseInt(rgb.b);
 	bulbObject.color.w = parseInt(rgb.w);
-	
+
 	if(!bulbObject.hasOwnProperty('alert')){
 		//make alert object if none exists yet to not break sendToVisualight Function
 		bulbObject.alert = {};
@@ -240,10 +241,10 @@ if(bulbObject.hue == 0){
   //console.log("callingback with bulb");
 
 	callback(bulbObject);
-	
+
 	//process color details and send to bulb
 	//write bulbobject to db
-	
+
 }
 
 var processBulbColors = function(bulbObject){
